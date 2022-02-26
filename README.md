@@ -17,7 +17,7 @@ To connect the back cover to the frame, I used M3 inserts in the frame. The hole
 The used LED stripes are of type WS2812 with 60 LEDs/m.
 The controller board is an ESP-12F module with ESP8266.
 As a real time clock a DS3231 module is used.
-Optional, a light sensor can be also used. I use the module BH1750.
+Optional, a light sensor can be also used. The used module is a BH1750.
 
 ## Software
 To build the software VisualStudio Code with PlatformIO can be used. Extract the archive 'wordclock_sw.7z' to a folder and open it with VS Code, build it and flash it to the ESP8266. To flash the device, upload the filesystem image 'littlefs.bin' and the application image 'wordclock.bin'.
