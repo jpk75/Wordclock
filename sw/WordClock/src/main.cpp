@@ -5,7 +5,6 @@
 #include <WiFiManager.h>
 #include <DNSServer.h>
 #include <EEPROM.h>
-#include <Adafruit_NeoPixel.h>
 #include <RTClib.h>
 #include <BH1750.h>
 #include <time.h>
