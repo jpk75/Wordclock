@@ -5,7 +5,6 @@
 #include <WiFiManager.h>
 #include <DNSServer.h>
 #include <EEPROM.h>
-#include <Adafruit_NeoPixel.h>
 #include <RTClib.h>
 #include <BH1750.h>
 #include <time.h>
@@ -139,8 +138,8 @@ void setupTime(){
          if (2 == n) {
             split[0].replace(F("\""), F(""));
             if (split[0] == parameter.getTimezone()){
-               split[1].replace(F("\""), F(""));
-               split[1].replace(F(","), F(""));
+               split[1].replace(F("\","), F(""));  // 1st remove chars '",'
+               split[1].replace(F("\""), F(""));   // 2nd remove char '"'
                tz = split[1];
                DebugLog.println(F("Timezone found: Zone = '") + split[0] + F("', Code = ") + split[1]);
             }
