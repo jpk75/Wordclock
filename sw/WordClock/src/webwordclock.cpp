@@ -1,7 +1,7 @@
 #include <Arduino.h>
-#include <RTClib.h>
-#include <BH1750.h>
 #include <LittleFS.h>
+#include "timehandler.h"
+#include "lighthandler.h"
 #include "webwordclock.h"
 #include "debuglog.h"
 
@@ -21,8 +21,9 @@ const String WebWordclock::mimePlain= mimePlain;
 const String WebWordclock::mimeCSS  = mimeCSS;
 const String WebWordclock::mimeJS   = mimeJS;
 
-extern RTC_DS3231 rtc;
-extern BH1750 lightMeter;
+//extern RTC_DS3231 rtc;
+extern TimeHandler thTime;
+extern LightHandler lightMeter;
 
 WebWordclock::WebWordclock(Parameter& param, WebService& ws)
     : parameter(param)
@@ -107,6 +108,38 @@ void WebWordclock::httpMainPage(){
     // strContent += DebugLog.getVerbosity();
     // strContent += F("'><br><br>\n");
 
+    strContent += F("<br><br><h2>Zeitzone &amp; NTP-Server</h2><br>\n");
+
+    strContent += F("<label for='ntpserver'>NTP Server</label>\n");
+    strContent += F("<input type='text' id='ntpserver' name='ntpserver' size='45' value='");
+    strContent += parameter.ntpServer;
+    strContent += F("'><br>\n");
+
+    strContent += F("<br><label for='timezone'>Timezone</label>\n");
+    strContent += F("<select id='timezone' name='timezone'>\n<option selected value='");
+    strContent += parameter.timeZone;
+    strContent += F("'>");
+    strContent += parameter.timeZone;
+    strContent += F("</option>\n");
+    strContent += F("</select><br>\n");
+
+//    strContent += F("<input type='text' id='timezone' name='timezone' size='45' value='");
+//    strContent += parameter.timeZone;
+//    strContent += F("'><br>\n");
+
+    strContent += F("<br>Default: \n");
+    strContent += F(PARAM_TIMEZONE_DEFAULT);
+    strContent += F("<br>\n");
+
+    strContent += F("<br><a href='");
+    strContent += F(TZ_WEB_SITE) + String(F("'"));
+    strContent += F(" target='_blank'>Liste mit Einstellung der Zeitzone</a><br>\n");
+
+    // strContent += F("<label for='curdate'>Date</label>\n");
+    // strContent += F("<input type='date' id='curdate' name='curdate' value=''><br>\n");
+    // strContent += F("<label for='curtime'>Time</label>\n");
+    // strContent += F("<input type='time' id='curtime' name='curtime' value=''><br>\n");
+
     strContent += F("<br><br><h2>Anzeige Einstellungen</h2><br>\n");
 //    strContent += F("<fieldset><legend>Color Mode</legend>\n");
     strContent += F("<label for='col_uni'>Einzelne Farbe: </label>");
@@ -162,33 +195,6 @@ void WebWordclock::httpMainPage(){
     strContent += F("<input type='time' id='time_off' name='time_off' value='");
     strContent += parameter.getDisplayTimeOff();
     strContent += F("'><br><br>\n");
-
-    strContent += F("<br><br><h2>Zeitzone &amp; NTP-Server</h2><br>\n");
-
-    strContent += F("<label for='ntpserver'>NTP Server</label>\n");
-    strContent += F("<input type='text' id='ntpserver' name='ntpserver' size='45' value='");
-    strContent += parameter.ntpServer;
-    strContent += F("'><br>\n");
-
-    strContent += F("<br><label for='timezone'>Timezone</label>\n");
-    strContent += F("<select id='timezone' name='timezone'>\n<option selected value='");
-    strContent += parameter.timeZone;
-    strContent += F("'>");
-    strContent += parameter.timeZone;
-    strContent += F("</option>\n");
-    strContent += F("</select><br>\n");
-
-//    strContent += F("<input type='text' id='timezone' name='timezone' size='45' value='");
-//    strContent += parameter.timeZone;
-//    strContent += F("'><br>\n");
-
-    strContent += F("<br>Default: \n");
-    strContent += F(PARAM_TIMEZONE_DEFAULT);
-    strContent += F("<br>\n");
-
-    strContent += F("<br><a href='");
-    strContent += F(TZ_WEB_SITE) + String(F("'"));
-    strContent += F(" target='_blank'>Liste mit Einstellung der Zeitzone</a><br>\n");
 
     strContent += F("<br><br><h2>Wifi Einstellungen</h2><br>\n");
     strContent += F("<label for='wifi_host'>Hostname</label>\n");
@@ -404,7 +410,7 @@ void WebWordclock::handleJs() {
 
 void WebWordclock::handleJson() {
     // Output: send data to browser as JSON
-    time_t now = rtc.now().unixtime();
+    time_t now = thTime.epoch();
     struct tm curTime = {};
     localtime_r(&now, &curTime);
     DateTime dt(curTime.tm_year+1900, curTime.tm_mon+1,curTime.tm_mday, curTime.tm_hour, curTime.tm_min, curTime.tm_sec);
@@ -418,7 +424,7 @@ void WebWordclock::handleJson() {
     message += (F(",\"illumination\":"));
     message += String(lightMeter.readLightLevel());
     message += (F(",\"temperature\":"));
-    message += String(rtc.getTemperature());
+    message += String(0); //rtc.getTemperature());
     message += (F(",\"ssid\":"));
     message += String(F("\"")) + String(WiFi.SSID()) + String(F("\""));
     message += (F(",\"rssi\":"));

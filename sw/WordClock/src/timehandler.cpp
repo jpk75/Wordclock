@@ -9,6 +9,8 @@
 
 #define NTP_SERVER_TIMEOUT 16000
 
+// char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
 TimeHandler::TimeHandler(Parameter& param)
     : m_parameter(param)
     , m_ntp(m_ntpUdp)
@@ -58,10 +60,18 @@ void TimeHandler::begin(){
 
     String time = String("Time synchronized to ") + m_ntp.formattedTime("%d. %B %Y / %A %T");
     DebugLog.println(time);
+
+#if USE_RTC
+    initRTC();
+#endif
 }
 
 void TimeHandler::loop(){
-    m_ntp.update();
+    if (m_ntp.update()){
+#if USE_RTC
+        checkRTC();
+#endif
+    }
 }
 
 void TimeHandler::start(){   
@@ -98,3 +108,68 @@ int8_t  TimeHandler::minutes(){ return m_ntp.minutes();}
 int8_t  TimeHandler::seconds()   { return m_ntp.seconds();}
 char*   TimeHandler::formattedTime(const char *format){ return m_ntp.formattedTime(format);}
 String TimeHandler::formattedTime(const String& format) { return String(m_ntp.formattedTime(format.c_str()));}
+
+bool TimeHandler::initRTC(){
+#if USE_RTC
+    // Initialize & check RTC
+    DebugLog.print("Init RTC ...");
+    if (!m_rtcStarted) {
+       if (m_rtc.begin()) {
+          DebugLog.println("success");
+          m_rtcStarted = true;
+          if (m_rtc.lostPower()) {
+             DebugLog.println("RTC lost power, let's set the time!");
+             // When time needs to be set on a new device, or after a power loss, the
+             // following line sets the RTC to the date & time this sketch was compiled
+             if (isNtpValid()){
+                uint32_t t = (uint32_t)epoch();
+                m_rtc.adjust(DateTime(t));
+             }
+             else
+                m_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+          }
+       } else {
+          DebugLog.println("failed");
+          DebugLog.println("Couldn't find RTC");
+          m_rtcStarted = false;
+       }
+    } else {
+          DebugLog.println("success (already initialized)");
+    }
+#else
+   m_rtcStarted = false;
+#endif
+   return m_rtcStarted;
+}
+
+bool TimeHandler::checkRTC(){
+#if USE_RTC
+   // Initialize & check RTC
+   DebugLog.println("Check RTC");
+   if (!m_rtcStarted) {
+       initRTC();
+   }
+
+   if (m_rtcStarted){
+      DebugLog.println("Checking RTC time");
+      if (isNtpValid()){
+         DebugLog.println("NTP Server available");
+         if (epoch() != m_rtc.now().unixtime()){
+            // time differs between system time (NTP) and RTC
+            // => adjust RTC
+            m_rtc.adjust(DateTime((uint32_t)epoch()));
+            DebugLog.println("Adjusting RTC time");
+            DebugLog.println(String("RTC Time set to ") + DateTime((uint32_t)epoch()).timestamp());
+         }
+      }
+      else{
+         DebugLog.println("NTP server not available - don't touch RTC time");
+      }
+      return true;
+   } else {
+      return true;
+   }
+#else
+   return false;
+#endif
+}
