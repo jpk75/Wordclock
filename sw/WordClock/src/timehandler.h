@@ -3,9 +3,13 @@
 // Class definition of time handler
 ////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
+#include "app-config.h"
 #include <NTP.h>
 #include <WiFiUdp.h>
 #include <parameter.h>
+#if USE_RTC
+    #include "RTClib.h"
+#endif
 
 class TimeHandler
 {
@@ -101,6 +105,8 @@ public:
     String formattedTime(const String& format);
     
 private:
+    bool initRTC();
+    bool checkRTC();
 
     // data member
 private:
@@ -114,4 +120,10 @@ private:
     int16_t m_timezone_minute;
     uint32_t m_update_interval_ms;
     bool m_ntp_available;
+
+    // rtc communication object
+    bool m_rtcStarted = false;
+#if USE_RTC
+    RTC_DS3231 m_rtc;
+#endif
 };
