@@ -1,5 +1,5 @@
 #pragma once
-#include "wordclock-config.h"
+#include "app-config.h"
 #include <stringex.h>
 #include <cstdint>
 #include <vector>
