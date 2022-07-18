@@ -1,5 +1,5 @@
 #pragma once
-#include "wordclock-config.h"   // include at top
+#include "app-config.h"   // include at top
 #include <ESP8266WebServer.h>
 #include "parameter.h"
 #include "webservice.h"

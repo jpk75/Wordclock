@@ -1,11 +1,14 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
+#include "timehandler.h"
+#include "lighthandler.h"
 #include "wordclock.h"
 #include "debuglog.h"
 
 
-extern RTC_DS3231 rtc;
-extern BH1750 lightMeter;
+//extern RTC_DS3231 rtc;
+extern TimeHandler thTime;
+extern LightHandler lightMeter;
 
 #if !CALC_SINELUT
 const uint8_t WordClock::ledColorSteps = 120;
@@ -164,7 +167,7 @@ void WordClock::setup(){
 
 void WordClock::handle(){    
     // get current time
-    time_t now = rtc.now().unixtime();
+    time_t now = thTime.epoch();
     struct tm ct = {};
     localtime_r(&now, &ct);
     curTime = DateTime(ct.tm_year+1900, ct.tm_mon+1,ct.tm_mday, ct.tm_hour, ct.tm_min, ct.tm_sec);

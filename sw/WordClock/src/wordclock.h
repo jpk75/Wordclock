@@ -1,12 +1,10 @@
 #pragma once
-#include "wordclock-config.h"   // include at top
+#include "app-config.h"   // include at top
 #include <cstdint>
 #include <map>
 #include <vector>
 //#include <Adafruit_NeoPixel.h>
 #include <NeoPixelBrightnessBus.h>
-#include <RTClib.h>
-#include <BH1750.h>
 #include "parameter.h"
 
 class WordClock
